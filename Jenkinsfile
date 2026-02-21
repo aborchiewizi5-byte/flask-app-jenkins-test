@@ -64,7 +64,7 @@ pipeline {
             echo "Pipeline failed. Check the logs above."
         }
         always {
-            bat 'if exist venv rmdir /s /q venv'
+            bat 'if exist venv rmdir /s /q venv 2>nul & exit /b 0'
         }
     }
 }
