@@ -18,10 +18,10 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing Python dependencies...'
-                sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
+                bat '''
+                    python -m venv venv
+                    call venv\\Scripts\\activate.bat
+                    python -m pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
             }
@@ -30,33 +30,27 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo 'Running tests with coverage...'
-                sh '''
-                    . venv/bin/activate
+                bat '''
+                    call venv\\Scripts\\activate.bat
                     pytest tests/ --cov=app --cov-report=xml --cov-report=term-missing -v
                 '''
-            }
-            post {
-                always {
-                    // Publish coverage report if the plugin is installed
-                    echo 'Tests complete.'
-                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% ."
             }
         }
 
         stage('Deploy (Local)') {
             steps {
                 echo 'Deploying container locally...'
-                sh '''
-                    docker stop jenkins-demo || true
-                    docker rm   jenkins-demo || true
-                    docker run -d --name jenkins-demo -p 5000:5000 ${IMAGE_NAME}:${IMAGE_TAG}
+                bat '''
+                    docker stop jenkins-demo 2>nul || exit /b 0
+                    docker rm   jenkins-demo 2>nul || exit /b 0
+                    docker run -d --name jenkins-demo -p 5000:5000 %IMAGE_NAME%:%IMAGE_TAG%
                 '''
             }
         }
@@ -70,7 +64,7 @@ pipeline {
             echo "Pipeline failed. Check the logs above."
         }
         always {
-            sh 'rm -rf venv'
+            bat 'if exist venv rmdir /s /q venv'
         }
     }
 }
