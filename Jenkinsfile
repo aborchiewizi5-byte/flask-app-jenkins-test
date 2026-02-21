@@ -28,14 +28,14 @@ pipeline {
         }
 
         stage('Run Tests') {
-            steps {
-                echo 'Running tests with coverage...'
-                bat '''
-                    call venv\\Scripts\\activate.bat
-                    pytest tests/ --cov=app --cov-report=xml --cov-report=term-missing -v
-                '''
-            }
-        }
+    steps {
+        echo 'Running tests with coverage...'
+        bat '''
+            call venv\\Scripts\\activate.bat
+            pytest tests/ --cov=app --cov-report=xml --cov-report=term-missing -v --rootdir=.
+        '''
+    }
+}
 
         stage('Build Docker Image') {
             steps {
